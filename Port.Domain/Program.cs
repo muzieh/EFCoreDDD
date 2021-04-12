@@ -24,11 +24,15 @@ namespace Port.Domain
             */
 
 
-            var students = await context.Students.Include(p => p.FavoriteCourse).ToListAsync();
+            var students = await context
+                .Students
+                //.Include(p => p.FavoriteCourse)
+                .ToListAsync();
             
             foreach (var student in students)
             {
                Console.WriteLine(student.ToString());
+               Console.WriteLine(student.FavoriteCourse.Name);
             }
         }
     }

@@ -10,9 +10,9 @@
        public string Email { get; private set; }
        public string FirstName { get; private set; }
        public string LastName { get; private set; }
-       public Course FavoriteCourse { get; private set; }
+       public virtual Course FavoriteCourse { get; private set; }
 
-       private Student()
+       protected Student()
        {
            
        }

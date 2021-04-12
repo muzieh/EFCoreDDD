@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 
 namespace Port.Domain.Model
 {
@@ -12,13 +14,24 @@ namespace Port.Domain.Model
            this.Database.EnsureCreated();
        }
        
+       /*public static readonly ILoggerFactory loggerFactory1 = new LoggerFactory(new[] {
+                 new ConsoleLoggerProvider(new OptionsMonitor<ConsoleLoggerOptions>())
+           });*/
        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
        {
+           var loggerFactory = LoggerFactory.Create(builder =>
+           {
+               builder.AddConsole();
+           });
+           
            optionsBuilder
                .UseNpgsql("Host=localhost;Username=postgres;Password=example;Database=Users", builder => builder
                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-               .EnableDetailedErrors();
-           
+               .UseLoggerFactory(loggerFactory)
+               .EnableDetailedErrors()
+               .UseLazyLoadingProxies();
+
+
        }
 
        protected override void OnModelCreating(ModelBuilder modelBuilder)
