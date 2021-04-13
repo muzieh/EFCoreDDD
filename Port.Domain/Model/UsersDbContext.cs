@@ -28,6 +28,7 @@ namespace Port.Domain.Model
                .UseNpgsql("Host=localhost;Username=postgres;Password=example;Database=Users", builder => builder
                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
                .UseLoggerFactory(loggerFactory)
+              .EnableSensitiveDataLogging()
                .EnableDetailedErrors()
                .UseLazyLoadingProxies();
 

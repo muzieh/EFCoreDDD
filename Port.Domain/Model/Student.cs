@@ -1,10 +1,5 @@
 ﻿namespace Port.Domain.Model
 {
-    public class Entity
-    {
-        public long Id { get; private set; }
-    }
-    
     public class Student : Entity
     {
        public string Email { get; private set; }
@@ -25,7 +20,7 @@
            FavoriteCourse = favoriteCourse;
        }
 
-       public override string ToString() => $"{Id} {FirstName} {LastName} {Email} {FavoriteCourse}";
+       public override string ToString() => $"{Id} {FirstName} {LastName} {Email}";
     }
     
 }
