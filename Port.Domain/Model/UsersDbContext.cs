@@ -8,9 +8,11 @@ namespace Port.Domain.Model
     {
        public DbSet<Student> Students { get; set; }
        public DbSet<Course> Courses { get; set; }
-
-       public UsersDbContext()
+       
+       private ILoggerFactory _loggerFactory;
+       public UsersDbContext(ILoggerFactory loggerFactory)
        {
+           _loggerFactory = loggerFactory;
            this.Database.EnsureCreated();
        }
        
@@ -27,7 +29,7 @@ namespace Port.Domain.Model
            optionsBuilder
                .UseNpgsql("Host=localhost;Username=postgres;Password=example;Database=Users", builder => builder
                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-               .UseLoggerFactory(loggerFactory)
+               .UseLoggerFactory(_loggerFactory)
               .EnableSensitiveDataLogging()
                .EnableDetailedErrors()
                .UseLazyLoadingProxies();

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+﻿using System;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.VisualBasic.CompilerServices;
 
 namespace Port.Domain.Model
@@ -9,13 +10,22 @@ namespace Port.Domain.Model
     {
         public long Id { get; }
 
+        protected Entity(long id)
+        {
+            Id = id;
+        }
+
+        protected Entity()
+        {
+            
+        }
         public override bool Equals(object obj)
         {
             if (!(obj is Entity other)) return false;
 
             if (ReferenceEquals(this, other)) return true;
 
-            if (GetType() != other.GetType()) return false;
+            if (GetRealType(this) != GetRealType(other)) return false;
 
             //transient objects not saved to the database yet
             if (Id == 0 || other.Id == 0) return false;
@@ -23,6 +33,13 @@ namespace Port.Domain.Model
             return Id == other.Id;
         }
 
+        private System.Type GetRealType(object obj)
+        {
+            if(obj == null)
+                throw new ArgumentNullException("obj");
+            
+            return obj.GetType().FullName.Contains("Castle.Proxies") ? obj.GetType().BaseType : obj.GetType();
+        }
 
         public override int GetHashCode()
         {

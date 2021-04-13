@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Port.Domain.Model;
+using Serilog;
 
 namespace Port.Domain
 {
@@ -13,36 +14,22 @@ namespace Port.Domain
     {
         static async Task Main(string[] args)
         {
-            var logger = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-            });
+            var serviceProvider = ConfigureServices(out var loggerFactory);
 
-            var l = logger.CreateLogger("category");
-            
-            await using var context = new UsersDbContext();
+            var logger = loggerFactory.CreateLogger<Program>();
+            await using var context = serviceProvider.GetService<UsersDbContext>();
            
             await SeedCourses(context);
-            await context.SaveChangesAsync();
             
             var courses = new List<Course>();
             courses.AddRange(context.Courses.ToList());
-            
-            var studentFaker = new Faker<Student>()
-                .CustomInstantiator(f =>
-                    new Student(f.Name.FirstName() ,f.Name.LastName(), f.Internet.Email(), f.PickRandom(courses)));
-
-            l.LogInformation("info from the morning doom");
-            
-            Enumerable.Range(0,100).ToList().ForEach(  _ =>
+            if (!context.Students.Any())
             {
-                var student = studentFaker.Generate();
-                 context.Students.Add(student);
-                 context.SaveChanges();
-            });
+                SeedStudents(courses, context);
+            }
 
 
-            var students = await context
+            /*var students = await context
                 .Students
                 //.Include(p => p.FavoriteCourse)
                 .ToListAsync();
@@ -51,20 +38,56 @@ namespace Port.Domain
             {
                Console.WriteLine(student.ToString());
                Console.WriteLine(student.FavoriteCourse.Name);
-            }
+            }*/
+
+            var lis = context.Students.Where(s => s.FavoriteCourse == Course.Math).ToList();
             
             Console.WriteLine(context.Students.Find(4L));
 
 
         }
 
+        private static ServiceProvider ConfigureServices(out ILoggerFactory? loggerFactory)
+        {
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .MinimumLevel.Information()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            var serviceProvider = new ServiceCollection()
+                .AddLogging( b => b.AddSerilog().SetMinimumLevel(LogLevel.Trace))
+                .AddDbContext<UsersDbContext>()
+                .BuildServiceProvider();
+
+            loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            //loggerFactory.AddSerilog();
+            return serviceProvider;
+        }
+
+        private static void SeedStudents(List<Course> courses, UsersDbContext context)
+        {
+            var studentFaker = new Faker<Student>()
+                .CustomInstantiator(f =>
+                    new Student(f.Name.FirstName(), f.Name.LastName(), f.Internet.Email(), f.PickRandom(courses)));
+
+
+            Enumerable.Range(0, 100).ToList().ForEach(_ =>
+            {
+                var student = studentFaker.Generate();
+                context.Students.Add(student);
+                context.SaveChanges();
+            });
+        }
+
         public static async Task SeedCourses(UsersDbContext context)
         {
             if (!context.Courses.Any())
             {
-                await context.Courses.AddAsync(new Course("Chemistry"));
-                await context.Courses.AddAsync(new Course("Biology"));
-                await context.Courses.AddAsync(new Course("Maths"));
+                await context.Courses.AddAsync(Course.Chemistry);
+                await context.Courses.AddAsync(Course.Biology);
+                await context.Courses.AddAsync(Course.Math);
+                await context.SaveChangesAsync();
             } 
             
         }

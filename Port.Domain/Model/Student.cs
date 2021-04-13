@@ -11,6 +11,7 @@
        {
            
        }
+       
        public Student(string firstName, string lastName, string email, Course favoriteCourse)
            :this()
        {
