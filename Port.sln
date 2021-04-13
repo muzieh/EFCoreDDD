@@ -7,6 +7,8 @@ ProjectSection(SolutionItems) = preProject
 	docker-compose.yml = docker-compose.yml
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Port.DomainTests", "Port.DomainTests\Port.DomainTests.csproj", "{5D665A74-DE73-43A6-A73F-28E9A27FAF3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +19,9 @@ Global
 		{76069727-02FA-42FD-BE58-7586CB50F042}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76069727-02FA-42FD-BE58-7586CB50F042}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76069727-02FA-42FD-BE58-7586CB50F042}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D665A74-DE73-43A6-A73F-28E9A27FAF3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D665A74-DE73-43A6-A73F-28E9A27FAF3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D665A74-DE73-43A6-A73F-28E9A27FAF3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D665A74-DE73-43A6-A73F-28E9A27FAF3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

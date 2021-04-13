@@ -7,7 +7,7 @@ namespace Port.Domain.Model
     
     public class Entity
     {
-        public long Id { get; private set; }
+        public long Id { get; }
 
         public override bool Equals(object obj)
         {
@@ -17,11 +17,18 @@ namespace Port.Domain.Model
 
             if (GetType() != other.GetType()) return false;
 
+            //transient objects not saved to the database yet
             if (Id == 0 || other.Id == 0) return false;
 
             return Id == other.Id;
         }
-    
+
+
+        public override int GetHashCode()
+        {
+            return (GetType().ToString() + Id).GetHashCode();
+        }
+
         public static bool operator ==(Entity a, Entity b)
         {
             if (a is null && b is null) return true;
