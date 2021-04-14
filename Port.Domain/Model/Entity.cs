@@ -5,7 +5,6 @@ using Microsoft.VisualBasic.CompilerServices;
 namespace Port.Domain.Model
 {
 
-    
     public class Entity
     {
         public long Id { get; }
@@ -15,10 +14,12 @@ namespace Port.Domain.Model
             Id = id;
         }
 
-        protected Entity()
+        //TODO: should be protected. It's only to fix broken tests
+        public Entity()
         {
             
         }
+        
         public override bool Equals(object obj)
         {
             if (!(obj is Entity other)) return false;

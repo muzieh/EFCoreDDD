@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Port.Domain.Controllers;
 using Port.Domain.Model;
 using Serilog;
 
@@ -12,12 +15,17 @@ namespace Port.Domain
 {
     class Program
     {
+        public static ServiceProvider Services;
         static async Task Main(string[] args)
         {
-            var serviceProvider = ConfigureServices(out var loggerFactory);
-
-            var logger = loggerFactory.CreateLogger<Program>();
-            await using var context = serviceProvider.GetService<UsersDbContext>();
+           Services = GetServiceProvider();
+            var conectionString = GetConnectionString();
+    
+            var logger = Services
+                .GetService<ILoggerFactory>()!
+                .CreateLogger<Program>();
+            
+            await using var context = Services.GetService<UsersDbContext>();
            
             await SeedCourses(context);
             
@@ -42,12 +50,33 @@ namespace Port.Domain
 
             var lis = context.Students.Where(s => s.FavoriteCourse == Course.Math).ToList();
             
-            Console.WriteLine(context.Students.Find(4L));
+            Console.WriteLine( context.Students.Find(4L));
+
+            Execute((c) => new StudentController(c).CheckStudentFavoriteCourse(4L, 2L));
+
 
 
         }
 
-        private static ServiceProvider ConfigureServices(out ILoggerFactory? loggerFactory)
+        private static string Execute(Func<UsersDbContext, string> func)
+        {
+            var loggerFactory = Services.GetService<ILoggerFactory>();
+            var connectionString = GetConnectionString();
+            using var context = new UsersDbContext(loggerFactory, connectionString);
+            return func(context);
+        }
+
+        private static string GetConnectionString()
+        {
+            var conf = Services.GetService<IConfiguration>();
+            var positionOptions = new PositionOptions();
+            conf.GetSection(PositionOptions.Position).Bind(positionOptions);
+            
+            return String.Empty;
+            //return configuration.GetConnectionString("UsersDb");
+        }
+        
+        private static ServiceProvider GetServiceProvider()
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
@@ -55,12 +84,22 @@ namespace Port.Domain
                 .WriteTo.Console()
                 .CreateLogger();
 
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
             var serviceProvider = new ServiceCollection()
                 .AddLogging( b => b.AddSerilog().SetMinimumLevel(LogLevel.Trace))
-                .AddDbContext<UsersDbContext>()
+                .AddScoped( sp =>
+                {
+                    var loggerFactory = sp.GetService<ILoggerFactory>();
+                    var configuration = sp.GetService<IConfiguration>();
+                    var connectionString = configuration.GetConnectionString("UsersDB");
+                    return new UsersDbContext(loggerFactory, connectionString);
+                })
+                .AddScoped<IConfiguration>( _ => configuration)
                 .BuildServiceProvider();
-
-            loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             //loggerFactory.AddSerilog();
             return serviceProvider;
         }
@@ -91,5 +130,13 @@ namespace Port.Domain
             } 
             
         }
+    }
+    
+    public class PositionOptions
+    {
+        public const string Position = "Position";
+
+        public string Title { get; set; }
+        public string Name { get; set; }
     }
 }

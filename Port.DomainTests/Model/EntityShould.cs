@@ -19,8 +19,9 @@ namespace Port.DomainTests.Model
         public void BeEqualToItself()
         {
             var e = new Entity();
+            var e2 = e;
             SetEntityIdWithReflection(e, 12);
-            var actualResult = e == e ;
+            var actualResult = e == e2 ;
             actualResult.Should().Be(true);
         }
         

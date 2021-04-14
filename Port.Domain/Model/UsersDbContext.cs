@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Castle.Core.Configuration;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 
@@ -9,11 +12,22 @@ namespace Port.Domain.Model
        public DbSet<Student> Students { get; set; }
        public DbSet<Course> Courses { get; set; }
        
-       private ILoggerFactory _loggerFactory;
-       public UsersDbContext(ILoggerFactory loggerFactory)
+       private readonly ILoggerFactory _loggerFactory;
+       
+       private readonly string _connectionString;
+
+       public UsersDbContext(ILoggerFactory loggerFactory, string connectionString)
        {
            _loggerFactory = loggerFactory;
+           _connectionString = connectionString;
+           
            this.Database.EnsureCreated();
+       }
+
+       public UsersDbContext(ILoggerFactory loggerFactory, IConfigurationRoot configuration)
+            :this(loggerFactory, configuration.GetConnectionString("UsersDb"))
+       {
+           
        }
        
        /*public static readonly ILoggerFactory loggerFactory1 = new LoggerFactory(new[] {
@@ -27,7 +41,7 @@ namespace Port.Domain.Model
            });
            
            optionsBuilder
-               .UseNpgsql("Host=localhost;Username=postgres;Password=example;Database=Users", builder => builder
+               .UseNpgsql(_connectionString, builder => builder
                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
                .UseLoggerFactory(_loggerFactory)
               .EnableSensitiveDataLogging()
